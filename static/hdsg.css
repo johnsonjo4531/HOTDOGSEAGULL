@@ -12,3 +12,12 @@ div.nav {
 div.file {
   margin: 3px 0 1px 0;
 }
+
+.playControls {
+    color: #fff;
+}
+
+.playControls i {
+    padding: 0 5px;
+    line-height: 50px;
+}
