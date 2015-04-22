@@ -36,7 +36,7 @@ angular.module('myApp', [])
 .controller('fileController', function(MediaFiles) {
     // do some stuff here
     var vm = this;
-    MediaFiles.getRoot().then(function (data) {
+    MediaFiles.getOne("").then(function (data) {
     	console.log(data);
     	vm = angular.extend(vm, data.data);
     	console.log(vm);

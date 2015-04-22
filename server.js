@@ -5,7 +5,7 @@
 //load modules
 var chromecast = require('./chromecast.js')
 var fs = require('fs');
-var dot = require('dot');
+//var dot = require('dot');
 var express = require('express');
 var path = require('path');
 var util = require('util');
@@ -40,32 +40,11 @@ console.log(util.inspect(config));
 //setup server
 var app = express();
 
-dot.templateSettings.strip = false;
+var viewsDir = path.join(__dirname + '/views/');
 
-dot.templateSettings = {
-  evaluate:    /\(\{([\s\S]+?)\}\)/g,
-  interpolate: /\(\{=([\s\S]+?)\}\)/g,
-  encode:      /\(\{!([\s\S]+?)\}\)/g,
-  use:         /\(\{#([\s\S]+?)\}\)/g,
-  define:      /\(\{##\s*([\w\.$]+)\s*(\:|=)([\s\S]+?)#\}\)/g,
-  conditional: /\(\{\?(\?)?\s*([\s\S]*?)\s*\}\)/g,
-  iterate:     /\(\{~\s*(?:\}\)|([\s\S]+?)\s*\:\s*([\w$]+)\s*(?:\:\s*([\w$]+))?\s*\}\))/g,
-};
+//dot.templateSettings.strip = false;
 
-//declare simple templating engine using dot
-app.engine('html', function(path, options, callback){
-	fs.readFile(path, function(err, string){
-		if (err) throw err;
-
-		var tempFn = dot.template(string);
-		options.app = app; //pass the app into the template
-		options.require = require; //pass in require so we can use it in templates when we need it
-		res = tempFn(options);
-		callback(0, res);
-	});
-})
-
-app.set('views', path.join(__dirname + '/views'))
+//app.set('views', path.join(__dirname + '/views'))
 
 // define custom logging format
 /*logger.format('detailed', function (token, req, res) {                                    
@@ -79,9 +58,9 @@ app.use('/static', express.static(__dirname + '/static'));
 app.use('/static_media', express.static( path.resolve(__dirname, config.media_folder) ));
 
 app.get('/', function(req, res){
-	res.render('index.html');
+	res.sendFile(path.join(viewsDir + 'index.html'));
 });
-
+/*
 app.get('/queue', function(req, res){
 	pathResolves = fs.existsSync(path.resolve(__dirname, media_folder));
 	if (! pathResolves){
@@ -93,9 +72,10 @@ app.get('/queue', function(req, res){
 		});
 	}
 });
+*/
 
 app.get('/design', function (req, res) {
-	res.render('design.html');
+	res.sendFile(path.join(viewsDir + 'design.html'));
 });
 
 app.get('/playfile', function(req, res){
@@ -104,15 +84,7 @@ app.get('/playfile', function(req, res){
 
 	chromecast.get_file_data(path.join(config.media_folder, req.query.f), function(compat, data){
         	if (data.ffprobe_data == undefined) data.ffprobe_data = {streams: []};
-		res.render('playfile.html', {
-			query: req.query, 
-			file_url: file_url,
-			transcode_url: transcode_url,
-			file_dir: path.dirname(req.query.f),
-			file_name: path.basename(file_url),
-			compatible: compat,
-			compatibility_data: data
-		});
+		res.sendFile(path.join(viewsDir + 'playfile.html'));
 	});
 });
 
@@ -153,14 +125,15 @@ apiRouter.get('/media', function (req, res) {
  		 res.json({statusCode: '404', message: 'Invalid media directory. Set "config.media_folder" var in server.js to a valid local path.'});
 	}
  	else{
-		chromecast.get_dir_data(config.media_folder, '/', false, function(files){
+		chromecast.get_dir_data(config.media_folder, '/', true, function(files){
 			res.json({files: files, dir: config.media_folder});	
 		});
 	}
 });
 
 apiRouter.get('/media/:file_name', function (req, res) {
-	if(req.params.file_name.indexOf(".") > 0) {
+	var stats = fs.statSync(path.join(config.media_folder, req.params.file_name));
+	if(stats && stats.isFile()) {
 		file_url = path.join('/static_media', req.params.file_name)
 		transcode_url = path.join('/transcode?f=', req.params.file_name)
 
@@ -176,13 +149,13 @@ apiRouter.get('/media/:file_name', function (req, res) {
 				compatibility_data: data
 			});
 		});
-	} else {
-		dir = path.join('/', req.params.file_name)
+	} else if (stats && stats.isDirectory()) {
+		dir = path.join('/', req.params.file_name);
 		//res.send(dir)
 		parentdir = path.join(dir, '../');
-		chromecast.get_dir_data(config.media_folder, dir, false, function(files){
+		chromecast.get_dir_data(config.media_folder, dir, true, function(files){
 			res.json({files: files, dir: dir, parentdir: parentdir})	
-		})
+		});
 	}
 });
 

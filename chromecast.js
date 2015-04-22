@@ -146,7 +146,7 @@ var get_file_data = function(file, callback){
 		if(obj.audio == 1 && obj.video==1 && obj.container == 1){
 			compat = 1;
 		}
-		callback(compat, obj);
+		callback(compat, obj, probeData.format);
 	});	
 }
 
@@ -154,9 +154,9 @@ var get_dir_data = function(basedir, dir, return_compat, callback){
 	//reads a directory
 	//calls callback( files ) with an associative array of files
 	//if return_compat is true, it also returns results of get_file_info()
-	var response_obj = {};
+	var response_arr = [];
 	var to_check = [];
-
+	var i = 0;
 	real_dir = path.join(basedir, dir)
 	files = fs.readdirSync(real_dir);
 	files.forEach(function(f){
@@ -165,7 +165,9 @@ var get_dir_data = function(basedir, dir, return_compat, callback){
 
 		//fill in information about the file in this dir
 		stats = fs.statSync(file_loc);
-		response_obj[file] = {
+		response_arr[i] = {
+				dir: file,
+				file_name: f,
 				compatibility_data: undefined,
 				compatible: 0,
 				is_dir: 0,
@@ -173,22 +175,28 @@ var get_dir_data = function(basedir, dir, return_compat, callback){
 			};
 
 		if(stats && stats.isFile()){
-			to_check.push(file);
+			to_check.push(i);
 		} else if ( stats && stats.isDirectory()){
-			response_obj[file].is_dir = 1;
+			response_arr[i].is_dir = 1;
 		}
+		++i;
 	});
 
 	var append_compat = function(file){
-			console.log('checking compatbility: basedir: '+basedir+' file: '+file)
-			get_file_data(path.join(basedir, file), function(compat, data){
-				response_obj[file].compatibility_data = data;
-				response_obj[file].compatible = compat;
+			console.log('checking compatbility: basedir: '+basedir+' file: '+ response_arr[file].dir)
+			get_file_data(path.join(basedir, response_arr[file].dir), function(compat, data, format){
+				response_arr[file].compatibility_data = data;
+				response_arr[file].compatible = compat;
+				response_arr[file].format_name = response_arr[file].file_name.split(".").splice(-1)[0];
+				response_arr[file].file_name = response_arr[file].file_name.replace(new RegExp("\\." + response_arr[file].format_name+ "$"), "");
+				if (format) {
+					response_arr[file].duration = format.duration;
+				}
 
 				if(to_check.length > 0){
 					append_compat(to_check.pop());
 				} else {
-					callback(response_obj);
+					callback(response_arr);
 				}
 			});
 		};
@@ -196,7 +204,7 @@ var get_dir_data = function(basedir, dir, return_compat, callback){
 	if(return_compat && to_check.length > 0){
 			append_compat(to_check.pop());
 	} else {
-		callback(response_obj);
+		callback(response_arr);
 	}
 }
 
