@@ -14,10 +14,56 @@ div.file {
 }
 
 .playControls {
-    color: #fff;
+    color: #ddd;
 }
 
 .playControls i {
     padding: 0 5px;
     line-height: 50px;
+    cursor: pointer;
+}
+
+.playControls i:hover,
+.playControls .fa-play, .playControls .fa-pause {
+    color: #555;
+}
+
+.left-player {
+    width: 50%;
+    float: left;
+    position: relative;
+    height: 50px;
+    margin-right: -159px;
+}
+
+.right-player {
+    width: 50%;
+    float: left;
+    margin-left: -160px;
+    height: 50px;
+}
+
+.middle-player {
+    height: 50px;
+    width: 318px;
+    float: left;
+    text-align: center;
+}
+
+.nav-player {
+	background: #fff;
+	border-top: 2px solid #40BF71;
+}
+
+.nav-sidebar > .active > a, .nav-sidebar > .active > a:hover, .nav-sidebar > .active > a:focus {
+  color: #fff;
+  background-color: #40BF71;
+}
+
+.nav-sidebar > li > a {
+  color: #aaa;
+}
+
+.nav-sidebar > li > a:hover {
+  color: #aaa;
 }
