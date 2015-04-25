@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <base href="/app">
+    
+    <link rel="stylesheet" type="text/css" href="static/lib/font-awesome-4.3.0/css/font-awesome.css" media="all" />
+	<link rel="stylesheet" type="text/css" href="static/lib/bootstrap-3.3.4-dist/css/bootstrap.css" media="all" />
+	<link rel="stylesheet" type="text/css" href="static/lib/bootstrap-3.3.4-dist/css/bootstrap-theme.css" media="all" />
+	<link rel="stylesheet" type="text/css" href="static/lib/bootstrap-3.3.4-dist/css/dashboard.css" media="all" />
+	<link rel="stylesheet" type="text/css" href="static/hdsg.css" media="all" />
+  </head>
+
+  <body ng-app="myApp" ng-controller="MainController as main">
+
+    <nav class="nav-player navbar navbar-inverse navbar-fixed-bottom">
+      <div class="left-player"></div>
+      <div class="middle-player playControls">
+				<i class="fa fa-fast-backward fa-2x"></i>
+				<i class="fa fa-play fa-2x"></i>
+				<i class="fa fa-fast-forward fa-2x"></i>
+			</div>
+			<div class="right-player"></div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="/app">All <span class="sr-only">(current)</span></a></li>
+            <li><a href="/app/directory?byDir=true">Library</a></li>
+            <li><a href="#">Analytics</a></li>
+            <li><a href="#">Export</a></li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li><a href="">Nav item</a></li>
+            <li><a href="">Nav item again</a></li>
+            <li><a href="">One more nav</a></li>
+            <li><a href="">Another nav item</a></li>
+            <li><a href="">More navigation</a></li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li><a href="">Nav item again</a></li>
+            <li ng-init="obj = {greeting: 'Hello World'}"><a href="">One more nav {{ main.data.greeting }}</a></li>
+            <li><a href="/app/settings"><i class="fa fa-gears"></i> Settings</a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <div ng-view></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript" src="static/lib/bootstrap-3.3.4-dist/js/bootstrap.js"></script>
+  <script type="text/javascript" src="/static/underscore.js"></script>
+  <script type="text/javascript" src="/static/lib/angularJS/angular-route.min.js"></script>
+  <script type="text/javascript" src="/static/assets/bower_components/angular/angular.js"></script>
+<script type="text/javascript" src="/static/assets/bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+<script type="text/javascript" src="/static/assets/bower_components/videogular/videogular.js"></script>
+<script type="text/javascript" src="/static/assets/bower_components/videogular-controls/vg-controls.js"></script>
+<script type="text/javascript" src="/static/assets/bower_components/videogular-overlay-play/vg-overlay-play.js"></script>
+<script type="text/javascript" src="/static/assets/bower_components/videogular-poster/vg-poster.js"></script>
+<script type="text/javascript" src="/static/assets/bower_components/videogular-buffering/vg-buffering.js"></script>
+  <script type="text/javascript" src="/static/app/app.js"></script>
+  <script type="text/javascript" src="/static/app/app.routes.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>

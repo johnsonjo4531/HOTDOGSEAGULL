@@ -150,6 +150,41 @@ var get_file_data = function(file, callback){
 	});	
 }
 
+var walkMedia = function(basedir, dir, done) {
+  var results = [];
+  var directory = path.join(basedir, dir);
+  fs.readdir(directory, function(err, list) {
+    if (err) return done(err);
+    var pending = list.length;
+    if (!pending) return done(null, results);
+    list.forEach(function(f) {
+      var file = path.resolve(directory, f);
+      var relativeFile = path.join(dir, f);
+      fs.stat(file, function(err, stat) {
+        if (stat && stat.isDirectory()) {
+          walkMedia(basedir, relativeFile, function(err, res) {
+            results = results.concat(res);
+            if (!--pending) done(null, results);
+          });
+        } else {
+        	file = {
+				dir: relativeFile,
+				file_name: f,
+				compatibility_data: undefined,
+				compatible: 0,
+				is_dir: 0,
+				stats: stat
+			};
+			file.format_name = file.file_name.split(".").splice(-1)[0];
+			file.file_name = file.file_name.replace(new RegExp("\\." + file.format_name+ "$"), "");
+          results.push(file);
+          if (!--pending) done(null, results);
+        }
+      });
+    });
+  });
+};
+
 var get_dir_data = function(basedir, dir, return_compat, callback){
 	//reads a directory
 	//calls callback( files ) with an associative array of files
@@ -157,7 +192,7 @@ var get_dir_data = function(basedir, dir, return_compat, callback){
 	var response_arr = [];
 	var to_check = [];
 	var i = 0;
-	real_dir = path.join(basedir, dir)
+	real_dir = path.join(basedir, dir);
 	files = fs.readdirSync(real_dir);
 	files.forEach(function(f){
 		var file = path.join(dir, f);
@@ -174,6 +209,9 @@ var get_dir_data = function(basedir, dir, return_compat, callback){
 				stats: stats
 			};
 
+		response_arr[i].format_name = response_arr[i].file_name.split(".").splice(-1)[0];
+		response_arr[i].file_name = response_arr[i].file_name.replace(new RegExp("\\." + response_arr[i].format_name+ "$"), "");
+
 		if(stats && stats.isFile()){
 			to_check.push(i);
 		} else if ( stats && stats.isDirectory()){
@@ -187,8 +225,6 @@ var get_dir_data = function(basedir, dir, return_compat, callback){
 			get_file_data(path.join(basedir, response_arr[file].dir), function(compat, data, format){
 				response_arr[file].compatibility_data = data;
 				response_arr[file].compatible = compat;
-				response_arr[file].format_name = response_arr[file].file_name.split(".").splice(-1)[0];
-				response_arr[file].file_name = response_arr[file].file_name.replace(new RegExp("\\." + response_arr[file].format_name+ "$"), "");
 				if (format) {
 					response_arr[file].duration = format.duration;
 				}
@@ -358,6 +394,7 @@ var check_dependencies = function(callback){
 
 module.exports = {
   get_file_data: get_file_data,
+  walkMedia: walkMedia,
   get_dir_data: get_dir_data,
   transcode_stream: transcode_stream,
   check_dependencies: check_dependencies,

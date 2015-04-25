@@ -1,0 +1,26 @@
+<div class="form-inline form">
+	<input type="checkbox" ng-model="files.filters['music']"> Music
+	<input type="checkbox" ng-model="files.filters['video']"> Video
+	<input type="checkbox" ng-model="files.filters['directory']"> Directory
+</div>
+
+<div class="filelist" >
+	<table class="table table-bordered table-striped">
+		<tr>
+			<th class="iconCol">Icon</th>
+			<th>Name</th>
+			<th>Type</th>
+		</tr>
+		<tr ng-repeat="file in files.files | filter:files.mediaFilter" class="file">
+			<td class="iconCol"><i class="fa-2x" ng-class="files.getIconClass(file)"></i></td>
+			<td ng-if="!file.is_dir">
+				<a ng-href="{{ files.getURL(file.dir) }}">{{file.file_name}}</a>
+			</td>
+			<td ng-if="!file.is_dir">{{file.format_name || ""}}</td>
+			<td ng-if="file.is_dir">
+				<a href="" ng-click="files.getDirectory(file.dir)">{{file.file_name}}/</a>
+			</td>
+			<td ng-if="file.is_dir">Directory</td>
+		</tr>
+	</table>
+</div>

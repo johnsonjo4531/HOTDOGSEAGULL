@@ -40,7 +40,9 @@ console.log(util.inspect(config));
 //setup server
 var app = express();
 
-var viewsDir = path.join(__dirname + '/views/');
+var staticDir = path.join(__dirname + '/static');
+
+var viewsDir = path.join(staticDir + '/app/views')
 
 //dot.templateSettings.strip = false;
 
@@ -53,13 +55,25 @@ var viewsDir = path.join(__dirname + '/views/');
 
 app.use(logger());
 
-app.use('/static', express.static(__dirname + '/static'));
+app.use('/static', express.static(staticDir));
 
 app.use('/static_media', express.static( path.resolve(__dirname, config.media_folder) ));
 
+var apiRouter = express.Router();
+
 app.get('/', function(req, res){
-	res.sendFile(path.join(viewsDir + 'index.html'));
+	res.redirect('/app');
 });
+
+var appRouter = express.Router();
+
+appRouter.get('*', function (req, res) {
+	res.sendFile(path.join(viewsDir + '/index.html'));
+});
+
+
+app.use('/app', appRouter);
+
 /*
 app.get('/queue', function(req, res){
 	pathResolves = fs.existsSync(path.resolve(__dirname, media_folder));
@@ -72,7 +86,7 @@ app.get('/queue', function(req, res){
 		});
 	}
 });
-*/
+
 
 app.get('/design', function (req, res) {
 	res.sendFile(path.join(viewsDir + 'design.html'));
@@ -87,6 +101,7 @@ app.get('/playfile', function(req, res){
 		res.sendFile(path.join(viewsDir + 'playfile.html'));
 	});
 });
+*/
 
 app.get('/transcode', function(req, res) {
 	// borrowed from the  ffmpeg-fluent examples
@@ -125,7 +140,23 @@ apiRouter.get('/media', function (req, res) {
  		 res.json({statusCode: '404', message: 'Invalid media directory. Set "config.media_folder" var in server.js to a valid local path.'});
 	}
  	else{
-		chromecast.get_dir_data(config.media_folder, '/', true, function(files){
+		chromecast.get_dir_data(config.media_folder, '/', false, function(files){
+			res.json({files: files, dir: config.media_folder});	
+		});
+	}
+});
+
+apiRouter.get('/media/all', function (req, res) {
+	pathResolves = fs.existsSync(path.resolve(__dirname, config.media_folder));
+	if (! pathResolves){
+ 		 res.json({statusCode: '404', message: 'Invalid media directory. Set "config.media_folder" var in server.js to a valid local path.'});
+	}
+ 	else{
+		chromecast.walkMedia(config.media_folder, '/', function(err, files){
+			if (err) throw err;
+			files = files.filter(function (el) {
+				return !(/Thumbs.db$/.test(el.dir));
+			});
 			res.json({files: files, dir: config.media_folder});	
 		});
 	}
@@ -139,7 +170,7 @@ apiRouter.get('/media/:file_name', function (req, res) {
 
 		chromecast.get_file_data(path.join(config.media_folder, req.params.file_name), function(compat, data){
 	        	if (data.ffprobe_data == undefined) data.ffprobe_data = {streams: []};
-			res.json({
+			var file = {
 				query: req.query, 
 				file_url: file_url,
 				transcode_url: transcode_url,
@@ -147,13 +178,16 @@ apiRouter.get('/media/:file_name', function (req, res) {
 				file_name: path.basename(file_url),
 				compatible: compat,
 				compatibility_data: data
-			});
+			};
+			file.format_name = file.file_name.split(".").splice(-1)[0];
+			file.file_name = file.file_name.replace(new RegExp("\\." + file.format_name+ "$"), "");
+			res.json(file);
 		});
 	} else if (stats && stats.isDirectory()) {
 		dir = path.join('/', req.params.file_name);
 		//res.send(dir)
 		parentdir = path.join(dir, '../');
-		chromecast.get_dir_data(config.media_folder, dir, true, function(files){
+		chromecast.get_dir_data(config.media_folder, dir, false, function(files){
 			res.json({files: files, dir: dir, parentdir: parentdir})	
 		});
 	}
