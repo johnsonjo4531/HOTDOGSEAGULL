@@ -155,7 +155,7 @@ apiRouter.get('/media/all', function (req, res) {
 		chromecast.walkMedia(config.media_folder, '/', function(err, files){
 			if (err) throw err;
 			files = files.filter(function (el) {
-				return !(/Thumbs.db$/.test(el.dir));
+				return !(/(Thumbs.db|.DS_Store)$/.test(el.dir));
 			});
 			res.json({files: files, dir: config.media_folder});	
 		});
